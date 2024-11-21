@@ -56,7 +56,7 @@ async def remove_slow(
                         continue
                     if queueItem["status"] == "downloading":
                         if (
-                            queueItem["sizeleft"] == 0
+                            queueItem["size"] > 0 and queueItem["sizeleft"] == 0
                         ):  # Skip items that are finished downloading but are still marked as downloading. May be the case when files are moving
                             logger.info(
                                 ">>> Detected %s download that has completed downloading - skipping check (torrent files likely in process of being moved): %s",
@@ -65,10 +65,13 @@ async def remove_slow(
                             )
                             continue
                         # determine if the downloaded bit on average between this and the last iteration is greater than the min threshold
-                        downloadedSize, previousSize, increment, speed = (
-                            await getDownloadedSize(
-                                settingsDict, queueItem, download_sizes_tracker, NAME
-                            )
+                        (
+                            downloadedSize,
+                            previousSize,
+                            increment,
+                            speed,
+                        ) = await getDownloadedSize(
+                            settingsDict, queueItem, download_sizes_tracker, NAME
                         )
                         if (
                             queueItem["downloadId"] in download_sizes_tracker.dict
